@@ -29,4 +29,17 @@ const editPasswordById = async (
   return await user.save();
 };
 
-export { editUserById, editPasswordById };
+const deleteUserById = async (senderId: string) => {
+  const user = await User.findOne({ senderId });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  await User.updateOne(
+    { senderId },
+    {
+      $unset: { email: "", password: "" },
+      $set: { firstname: "Utilisateur", lastname: "Supprimé" },
+    }
+  );
+};
+
+export { editUserById, editPasswordById, deleteUserById };

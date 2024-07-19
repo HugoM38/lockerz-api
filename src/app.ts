@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
+import userRoutes from "./routes/userRoutes";
 import dotenv from "dotenv";
 import cors from "cors";
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI as string)

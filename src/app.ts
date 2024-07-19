@@ -5,6 +5,8 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import dotenv from "dotenv";
 import cors from "cors";
+import localisationRoutes from "./routes/localisationRoutes";
+import lockerRoutes from "./routes/lockerRoutes";
 
 dotenv.config();
 
@@ -16,6 +18,8 @@ app.use(bodyParser.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/locker", lockerRoutes);
+app.use("/api/localisation", localisationRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI as string)

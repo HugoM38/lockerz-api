@@ -30,7 +30,7 @@ const createLocker = async (
 
 const getLockers = async (req: Request, res: Response) => {
   try {
-    const lockers = await Locker.find();
+    const lockers = await Locker.find().select("_id number localisation status");
     res.status(200).json(lockers);
   } catch (error) {
     res.status(400).json({ error: "Une erreur inconnue s'est produite" });

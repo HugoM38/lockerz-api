@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createNewLocker } from "../services/lockerService";
+import Locker from "../models/lockerModel";
 
 const createLocker = async (
   req: Request & { user?: string },
@@ -27,4 +28,13 @@ const createLocker = async (
   }
 };
 
-export { createLocker };
+const getLockers = async (req: Request, res: Response) => {
+  try {
+    const lockers = await Locker.find();
+    res.status(200).json(lockers);
+  } catch (error) {
+    res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+  }
+}
+
+export { createLocker, getLockers };

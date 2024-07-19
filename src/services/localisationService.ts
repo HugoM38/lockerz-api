@@ -14,7 +14,6 @@ const createNewLocalisation = async (
   const locker = await Localisation.findOne({ name });
   if (locker) throw new Error("La localisation existe déjà");
 
-  console.log(user.id);
   if (user.role != "admin")
     throw new Error("L'utilisateur n'est pas administrateur");
 

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createNewLocalisation } from "../services/localisationService";
+import Localisation from "../models/localisationModel";
 
 const createLocalisation = async (
   req: Request & { user?: string },
@@ -27,4 +28,13 @@ const createLocalisation = async (
   }
 };
 
-export { createLocalisation };
+const getLocalisations = async (req: Request, res: Response) => {
+  try {
+    const localisations = await Localisation.find();
+    res.status(200).json(localisations);
+  } catch (error) {
+    res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+  }
+};
+
+export { createLocalisation, getLocalisations };

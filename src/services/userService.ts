@@ -1,5 +1,5 @@
-import e from "express";
 import User from "../models/userModel";
+import bcrypt from "bcryptjs";
 
 const editUserById = async (
   senderId: string,
@@ -15,4 +15,18 @@ const editUserById = async (
   return await user.save();
 };
 
-export { editUserById };
+const editPasswordById = async (
+  senderId: string,
+  oldPassword: string,
+  newPassword: string
+) => {
+  const user = await User.findOne({ senderId });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isMatch) throw new Error("Mot de passe incorrect");
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+  return await user.save();
+};
+
+export { editUserById, editPasswordById };

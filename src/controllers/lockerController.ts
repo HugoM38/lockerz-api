@@ -37,4 +37,13 @@ const getLockers = async (req: Request, res: Response) => {
   }
 }
 
-export { createLocker, getLockers };
+const getAdminLockers = async (req: Request, res: Response) => {
+  try {
+    const lockers = await Locker.find();
+    res.status(200).json(lockers);
+  } catch (error) {
+    res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+  }
+}
+
+export { createLocker, getLockers, getAdminLockers };

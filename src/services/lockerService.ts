@@ -27,4 +27,39 @@ const createNewLocker = async (
   return await newLocker.save();
 };
 
-export { createNewLocker };
+const getTheAdminLockers = async (
+  senderId: string
+) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  if (user.role != "admin")
+    throw new Error("L'utilisateur n'est pas administrateur");
+
+  return await Locker.find();
+}
+
+const changeLockerStatusById = async (
+  senderId: string,
+  lockerId: string,
+  status: string
+) => {
+
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  if (user.role != "admin")
+    throw new Error("L'utilisateur n'est pas administrateur");
+
+  const lockerToFind = new mongoose.Types.ObjectId(lockerId);
+  const locker = await Locker.findOne(lockerToFind);
+  if (!locker) throw new Error("Le casier n'existe pas");
+
+  locker.status = status;
+
+  return await locker.save();
+}
+
+export { createNewLocker, getTheAdminLockers, changeLockerStatusById };

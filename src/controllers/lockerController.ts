@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createNewLocker } from "../services/lockerService";
+import { changeLockerStatusById, createNewLocker, getTheAdminLockers } from "../services/lockerService";
 import Locker from "../models/lockerModel";
 
 const createLocker = async (
@@ -30,20 +30,61 @@ const createLocker = async (
 
 const getLockers = async (req: Request, res: Response) => {
   try {
-    const lockers = await Locker.find().select("_id number localisation status");
+    const lockers = await Locker.find().select(
+      "_id number localisation status"
+    );
     res.status(200).json(lockers);
   } catch (error) {
     res.status(400).json({ error: "Une erreur inconnue s'est produite" });
   }
-}
+};
 
-const getAdminLockers = async (req: Request, res: Response) => {
+const getAdminLockers = async (
+  req: Request & { user?: string },
+  res: Response
+) => {
   try {
-    const lockers = await Locker.find();
+    const lockers = await getTheAdminLockers(req.user!);
     res.status(200).json(lockers);
   } catch (error) {
-    res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    if (error instanceof Error) {
+      if (error.message == "Utilisateur inexistant") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message == "L'utilisateur n'est pas administrateur") {
+        return res.status(403).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
   }
-}
+};
 
-export { createLocker, getLockers, getAdminLockers };
+const changeLockerStatus = async (
+  req: Request & { user?: string },
+  res: Response
+) => {
+  try {
+    const { id, status } = req.body;
+    const locker = await changeLockerStatusById(req.user!, id, status);
+    res.status(201).json(locker);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message == "Utilisateur inexistant") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message == "Le casier n'existe pas") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message == "L'utilisateur n'est pas administrateur") {
+        return res.status(403).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
+  }
+};
+
+export { createLocker, getLockers, getAdminLockers, changeLockerStatus };

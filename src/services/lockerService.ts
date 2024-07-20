@@ -20,7 +20,7 @@ const createNewLocker = async (
   const newLocker = new Locker({
     number,
     localisation,
-    status: "Disponible",
+    status: "available",
     reservations: [],
   });
 

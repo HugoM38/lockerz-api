@@ -38,7 +38,7 @@ const deleteUserById = async (senderId: string) => {
   if (!user) throw new Error("L'utilisateur n'existe pas");
 
   await User.updateOne(
-    { senderId },
+    { _id: sender },
     {
       $unset: { email: "", password: "" },
       $set: { firstname: "Utilisateur", lastname: "Supprimé" },

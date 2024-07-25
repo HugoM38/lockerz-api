@@ -56,4 +56,75 @@ const getThePendingReservations = async (senderId: string) => {
   return await Reservation.find({ status: "pending" });
 };
 
-export { createNewReservation, getThePendingReservations };
+const validateOrRefuseReservationById = async (
+  senderId: string,
+  reservationId: string,
+  status: string
+) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  if (user.role != "admin")
+    throw new Error("L'utilisateur n'est pas administrateur");
+
+  const reservationToFind = new mongoose.Types.ObjectId(reservationId);
+  const reservation = await Reservation.findOne({ _id: reservationToFind });
+  if (!reservation) throw new Error("La réservation n'existe pas");
+
+  if (status === "accepted") {
+    reservation.status = "accepted";
+    await reservation.save();
+  } else if (status === "refused") {
+    reservation.status = "refused";
+    await reservation.save();
+
+    const lockerToFind = new mongoose.Types.ObjectId(reservation.locker);
+    const locker = await Locker.findOne({ _id: lockerToFind });
+    if (!locker) throw new Error("Le casier n'existe pas");
+
+    locker.status = "available";
+    await locker.save();
+  } else {
+    throw new Error("Le statut de la réservation est incorrect");
+  }
+
+  return reservation;
+};
+
+const terminateReservationById = async (
+  senderId: string,
+  reservationId: string
+) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  const reservationToFind = new mongoose.Types.ObjectId(reservationId);
+  const reservation = await Reservation.findOne({ _id: reservationToFind });
+  if (!reservation) throw new Error("La réservation n'existe pas");
+
+  if (user._id != reservation.owner) {
+    if (user.role != "admin")
+      throw new Error("L'utilisateur n'est pas administrateur");
+  }
+
+  reservation.status = "terminated";
+  await reservation.save();
+
+  const lockerToFind = new mongoose.Types.ObjectId(reservation.locker);
+  const locker = await Locker.findOne({ _id: lockerToFind });
+  if (!locker) throw new Error("Le casier n'existe pas");
+
+  locker.status = "available";
+  await locker.save();
+
+  return reservation;
+};
+
+export {
+  createNewReservation,
+  getThePendingReservations,
+  validateOrRefuseReservationById,
+  terminateReservationById,
+};

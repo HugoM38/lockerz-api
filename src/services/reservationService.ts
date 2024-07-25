@@ -21,7 +21,8 @@ const createNewReservation = async (
   const lockerToFind = new mongoose.Types.ObjectId(lockerId);
   const locker = await Locker.findOne({ _id: lockerToFind });
   if (!locker) throw new Error("Le casier n'existe pas");
-  if (locker.status !== "available") throw new Error("Le casier est déjà occupé");
+  if (locker.status !== "available")
+    throw new Error("Le casier est déjà occupé");
 
   for (let index = 0; index < members.length; index++) {
     const memberId = new mongoose.Types.ObjectId(members[index]);
@@ -44,4 +45,15 @@ const createNewReservation = async (
   return newReservation;
 };
 
-export { createNewReservation };
+const getThePendingReservations = async (senderId: string) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  if (user.role != "admin")
+    throw new Error("L'utilisateur n'est pas administrateur");
+
+  return await Reservation.find({ status: "pending" });
+};
+
+export { createNewReservation, getThePendingReservations };

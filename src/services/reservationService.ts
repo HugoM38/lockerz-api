@@ -50,10 +50,13 @@ const getThePendingReservations = async (senderId: string) => {
   const user = await User.findOne({ _id: sender });
   if (!user) throw new Error("L'utilisateur n'existe pas");
 
-  if (user.role != "admin")
+  if (user.role !== 'admin')
     throw new Error("L'utilisateur n'est pas administrateur");
 
-  return await Reservation.find({ status: "pending" });
+  return await Reservation.find({ status: 'pending' })
+    .populate('locker')
+    .populate('owner')
+    .populate('members');
 };
 
 const validateOrRefuseReservationById = async (

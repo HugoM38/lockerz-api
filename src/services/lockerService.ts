@@ -1,5 +1,6 @@
 import User from "../models/userModel";
 import Locker from "../models/lockerModel";
+import Reservation from "../models/reservationModel";
 import mongoose from "mongoose";
 
 const createNewLocker = async (
@@ -27,9 +28,7 @@ const createNewLocker = async (
   return await newLocker.save();
 };
 
-const getTheAdminLockers = async (
-  senderId: string
-) => {
+const getTheAdminLockers = async (senderId: string) => {
   const sender = new mongoose.Types.ObjectId(senderId);
   const user = await User.findOne({ _id: sender });
   if (!user) throw new Error("L'utilisateur n'existe pas");
@@ -38,14 +37,13 @@ const getTheAdminLockers = async (
     throw new Error("L'utilisateur n'est pas administrateur");
 
   return await Locker.find();
-}
+};
 
 const changeLockerStatusById = async (
   senderId: string,
   lockerId: string,
   status: string
 ) => {
-
   const sender = new mongoose.Types.ObjectId(senderId);
   const user = await User.findOne({ _id: sender });
   if (!user) throw new Error("L'utilisateur n'existe pas");
@@ -60,6 +58,27 @@ const changeLockerStatusById = async (
   locker.status = status;
 
   return await locker.save();
-}
+};
 
-export { createNewLocker, getTheAdminLockers, changeLockerStatusById };
+const getTheOwnedLocker = async (senderId: string) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  const locker = await Locker.findOne({
+    reservations: {
+      $elemMatch: {
+        $or: [
+          { owner: user, status: "pending" },
+          { members: user, status: "pending" },
+        ],
+      },
+    },
+  }).populate("reservations");
+
+  if (!locker) throw new Error("Aucun casier trouvé");
+
+  return locker;
+};
+
+export { createNewLocker, getTheAdminLockers, changeLockerStatusById, getTheOwnedLocker };

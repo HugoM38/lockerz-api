@@ -79,7 +79,11 @@ const getUser = async (req: Request, res: Response) => {
 
 const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find({
+      firstname: { $ne: "Utilisateur" },
+      lastname: { $ne: "Supprimé" }
+    }).select("-password");
+    
     res.status(200).json(users);
   } catch (error) {
     res.status(400).json({ error: "Une erreur inconnue s'est produite" });

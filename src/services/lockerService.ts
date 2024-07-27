@@ -69,8 +69,8 @@ const getTheOwnedLocker = async (senderId: string) => {
     reservations: {
       $elemMatch: {
         $or: [
-          { owner: user, status: "pending" },
-          { members: user, status: "pending" },
+          { owner: user, status: { $in: ["pending", "accepted"] } },
+          { members: user, status: { $in: ["pending", "accepted"] } },
         ],
       },
     },
@@ -81,4 +81,9 @@ const getTheOwnedLocker = async (senderId: string) => {
   return locker;
 };
 
-export { createNewLocker, getTheAdminLockers, changeLockerStatusById, getTheOwnedLocker };
+export {
+  createNewLocker,
+  getTheAdminLockers,
+  changeLockerStatusById,
+  getTheOwnedLocker,
+};

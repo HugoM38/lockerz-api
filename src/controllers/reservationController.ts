@@ -29,6 +29,12 @@ const createReservation = async (
       if (error.message == "Un ou plusieurs membres n'existent pas") {
         return res.status(404).json({ error: error.message });
       }
+      if (
+        error.message ==
+        "L'utilisateur ou l'un des membres a déjà une réservation active pour un casier"
+      ) {
+        return res.status(403).json({ error: error.message });
+      }
       res.status(400).json({ error: error.message });
     } else {
       res.status(400).json({ error: "Une erreur inconnue s'est produite" });
@@ -92,29 +98,37 @@ const validateOrRefuseReservation = async (
 };
 
 const terminateReservation = async (
-    req: Request & { user?: string },
-    res: Response
-    ) => {
-    try {
-        const { reservationId } = req.body;
-        const reservation = await terminateReservationById(req.user!, reservationId);
-        res.status(200).json(reservation);
-    } catch (error) {
-        if (error instanceof Error) {
-        if (error.message == "Utilisateur inexistant") {
-            return res.status(404).json({ error: error.message });
-        }
-        if (error.message == "La réservation n'existe pas") {
-            return res.status(404).json({ error: error.message });
-        }
-        if (error.message == "L'utilisateur n'est pas administrateur") {
-            return res.status(403).json({ error: error.message });
-        }
-        res.status(400).json({ error: error.message });
-        } else {
-        res.status(400).json({ error: "Une erreur inconnue s'est produite" });
-        }
+  req: Request & { user?: string },
+  res: Response
+) => {
+  try {
+    const { reservationId } = req.body;
+    const reservation = await terminateReservationById(
+      req.user!,
+      reservationId
+    );
+    res.status(200).json(reservation);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message == "Utilisateur inexistant") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message == "La réservation n'existe pas") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message == "L'utilisateur n'est pas administrateur") {
+        return res.status(403).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
     }
-    }
+  }
+};
 
-export { createReservation, getPendingReservations, validateOrRefuseReservation, terminateReservation };
+export {
+  createReservation,
+  getPendingReservations,
+  validateOrRefuseReservation,
+  terminateReservation,
+};

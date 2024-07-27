@@ -37,15 +37,19 @@ const deleteUserById = async (senderId: string) => {
   const user = await User.findOne({ _id: sender });
   if (!user) throw new Error("L'utilisateur n'existe pas");
 
+  const uniqueEmail = `deleted-${Date.now()}-${senderId}@myges.fr`;
+
   await User.updateOne(
     { _id: sender },
     {
-      $unset: { email: "", password: "" },
-      $set: { firstname: "Utilisateur", lastname: "Supprimé" },
+      $unset: { password: 1 },
+      $set: {
+        firstname: "Utilisateur",
+        lastname: "Supprimé",
+        email: uniqueEmail,
+      },
     }
   );
 };
-
-
 
 export { editUserById, editPasswordById, deleteUserById };

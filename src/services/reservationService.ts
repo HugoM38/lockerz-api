@@ -21,8 +21,24 @@ const createNewReservation = async (
   const lockerToFind = new mongoose.Types.ObjectId(lockerId);
   const locker = await Locker.findOne({ _id: lockerToFind });
   if (!locker) throw new Error("Le casier n'existe pas");
-  if (locker.status !== "available")
-    throw new Error("Le casier est déjà occupé");
+  if (locker.status !== "available") throw new Error("Le casier est déjà occupé");
+
+  const existingReservations = await Reservation.find({
+    $and: [
+      { status: { $in: ["pending", "accepted"] } },
+      {
+        $or: [
+          { owner: senderId },
+          { members: senderId },
+          { members: { $in: members } }
+        ]
+      }
+    ]
+  });
+
+  if (existingReservations.length > 0) {
+    throw new Error("L'utilisateur ou l'un des membres a déjà une réservation active pour un casier");
+  }
 
   for (let index = 0; index < members.length; index++) {
     const memberId = new mongoose.Types.ObjectId(members[index]);

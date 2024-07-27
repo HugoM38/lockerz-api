@@ -36,7 +36,8 @@ const getTheAdminLockers = async (senderId: string) => {
   if (user.role != "admin")
     throw new Error("L'utilisateur n'est pas administrateur");
 
-  return await Locker.find();
+  return await Locker.find()
+      .populate("localisation");
 };
 
 const changeLockerStatusById = async (

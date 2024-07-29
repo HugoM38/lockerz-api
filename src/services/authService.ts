@@ -7,9 +7,10 @@ const register = async (
   firstname: string,
   lastname: string,
   email: string,
-  password: string,
+  password: string
 ) => {
-  if (!email.endsWith("@myges.fr")) throw new Error("L'email doit être un email GES");
+  if (!email.endsWith("@myges.fr"))
+    throw new Error("L'email doit être un email GES");
   const user = await User.findOne({ email });
   if (user) throw new Error("Utilisateur déjà existant");
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -26,7 +27,7 @@ const register = async (
   const token = jwt.sign(
     { id: userCreated._id },
     process.env.JWT_SECRET as string,
-    { expiresIn: "1h" },
+    { expiresIn: "1h" }
   );
 
   return { token, user: userCreated };
@@ -44,7 +45,7 @@ const login = async (email: string, password: string) => {
   const token = jwt.sign(
     { id: findUser._id },
     process.env.JWT_SECRET as string,
-    { expiresIn: "1h" },
+    { expiresIn: "1h" }
   );
   return { token, user: findUser };
 };
@@ -53,28 +54,30 @@ const sendVerificationCode = async (email: string) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("Utilisateur non trouvé");
 
-  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCode = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
   user.verificationCode = verificationCode;
   await user.save();
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: 'lockerz.code.sender@gmail.com',
+      user: "lockerz.code.sender@gmail.com",
       pass: process.env.EMAIL_PASSWORD,
-    }
+    },
   });
 
   const mailOptions = {
-    from: 'example@myges.com',
+    from: "example@myges.com",
     to: email,
-    subject: 'Code de vérification',
-    text: `Votre code de vérification est : ${verificationCode}`
+    subject: "Code de vérification",
+    text: `Votre code de vérification est : ${verificationCode}`,
   };
 
   await transporter.sendMail(mailOptions);
 
-  return { message: 'Code envoyé' };
+  return { message: "Code envoyé" };
 };
 
 const verifyCode = async (email: string, code: string) => {
@@ -85,7 +88,15 @@ const verifyCode = async (email: string, code: string) => {
     user.isEmailVerified = true;
     user.verificationCode = "";
     await user.save();
-    return { message: 'Email vérifié' };
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, {
+      expiresIn: "1h",
+    });
+
+    const { password, verificationCode, ...userWithoutSensitiveData } =
+      user.toObject();
+
+    return { token, user: userWithoutSensitiveData };
   } else {
     throw new Error("Code incorrect");
   }

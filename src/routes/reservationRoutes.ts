@@ -13,6 +13,6 @@ router.get("/pendingReservation", authMiddleware, getPendingReservations);
 router.patch("/validateOrRefuse", authMiddleware, validateRequest(validateReservationSchema), validateOrRefuseReservation);
 router.patch("/terminateReservation", authMiddleware, validateRequest(terminateReservationSchema), terminateReservation);
 router.get("/getCurrentReservation", authMiddleware, getCurrentReservation);
-router.get("/getLockerReservations", authMiddleware, getLockerReservations);
+router.get("/getLockerReservations/:lockerId", authMiddleware, getLockerReservations);
 
 export default router;

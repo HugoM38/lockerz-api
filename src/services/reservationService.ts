@@ -181,8 +181,8 @@ const getCurrentReservationOfUser = async (senderId: string) => {
         path: "localisation",
       },
     })
-    .populate("owner", "-password")
-    .populate("members", "-password");
+    .populate("owner", "-password -isEmailVerified -verificationCode")
+    .populate("members", "-password -isEmailVerified -verificationCode");
 
   return reservations;
 };
@@ -193,8 +193,8 @@ const getReservationsByLockerId = async (lockerId: string) => {
   if (!locker) throw new Error("Le casier n'existe pas");
 
   const reservations = await Reservation.find({ locker: lockerId })
-    .populate("owner", "-password")
-    .populate("members", "-password");
+    .populate("owner", "-password -isEmailVerified -verificationCode")
+    .populate("members", "-password -isEmailVerified -verificationCode");
 
   return reservations;
 };

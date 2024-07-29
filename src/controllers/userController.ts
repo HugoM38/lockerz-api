@@ -85,7 +85,8 @@ const getUsers = async (req: Request, res: Response) => {
     const users = await User.find({
       firstname: { $ne: "Utilisateur" },
       lastname: { $ne: "Supprimé" },
-    }).select("-password");
+      isEmailVerified: true,
+    }).select("-password -isEmailVerified -verificationCode");
 
     res.status(200).json(users);
   } catch (error) {

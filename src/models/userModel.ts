@@ -6,6 +6,8 @@ export interface IUser extends Document {
   role: string;
   email: string;
   password: string;
+  isEmailVerified: boolean;
+  verificationCode: string;
 }
 
 const UserSchema: Schema = new Schema({
@@ -14,6 +16,8 @@ const UserSchema: Schema = new Schema({
   role: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  isEmailVerified: { type: Boolean, default: false },
+  verificationCode: { type: String },
 });
 
 export default mongoose.model<IUser>("User", UserSchema);

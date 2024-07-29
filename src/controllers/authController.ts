@@ -42,7 +42,7 @@ const signin = async (req: Request, res: Response) => {
         return res.status(401).json({ error: "Identifiants invalides" });
       }
       if (error.message === "Email non vérifié") {
-        return res.status(401).json({ error: "Email non vérifié" });
+        return res.status(403).json({ error: "Email non vérifié" });
       }
       res.status(400).json({ error: error.message });
     } else {

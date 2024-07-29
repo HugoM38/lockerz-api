@@ -1,6 +1,5 @@
 import User from "../models/userModel";
 import Locker from "../models/lockerModel";
-import Reservation from "../models/reservationModel";
 import mongoose from "mongoose";
 
 const createNewLocker = async (
@@ -21,8 +20,7 @@ const createNewLocker = async (
   const newLocker = new Locker({
     number,
     localisation,
-    status: "available",
-    reservations: [],
+    status: "available"
   });
 
   return await newLocker.save();

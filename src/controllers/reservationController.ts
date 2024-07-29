@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   createNewReservation,
   getCurrentReservationOfUser,
+  getReservationsByLockerId,
   getThePendingReservations,
   terminateReservationById,
   validateOrRefuseReservationById,
@@ -146,10 +147,30 @@ const getCurrentReservation = async (
   }
 }
 
+const getLockerReservations = async (
+  req: Request & { user?: string },
+  res: Response
+) => {
+  try {
+    const reservations = await getReservationsByLockerId(req.params.lockerId);
+    res.status(200).json(reservations);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message == "Le casier n'existe pas") {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
+  }
+}
+
 export {
   createReservation,
   getPendingReservations,
   validateOrRefuseReservation,
   terminateReservation,
-  getCurrentReservation
+  getCurrentReservation,
+  getLockerReservations,
 };

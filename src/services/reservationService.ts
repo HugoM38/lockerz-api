@@ -55,10 +55,9 @@ const createNewReservation = async (
     members,
   });
 
-  const savedReservation: IReservation = await newReservation.save();
+  await newReservation.save();
 
   locker.status = "unavailable";
-  locker.reservations.push(savedReservation._id as mongoose.Types.ObjectId);
   await locker.save();
 
   return newReservation;
@@ -73,7 +72,12 @@ const getThePendingReservations = async (senderId: string) => {
     throw new Error("L'utilisateur n'est pas administrateur");
 
   return await Reservation.find({ status: "pending" })
-    .populate("locker")
+    .populate({
+      path: "locker",
+      populate: {
+        path: "localisation",
+      },
+    })
     .populate("owner")
     .populate("members");
 };
@@ -159,10 +163,23 @@ const getCurrentReservationOfUser = async (senderId: string) => {
   return reservations;
 };
 
+const getReservationsByLockerId = async (lockerId: string) => {
+  const lockerToFind = new mongoose.Types.ObjectId(lockerId);
+  const locker = await Locker.findOne({ _id: lockerToFind });
+  if (!locker) throw new Error("Le casier n'existe pas");
+
+  const reservations = await Reservation.find({ locker: lockerId })
+    .populate("owner", "-password")
+    .populate("members", "-password");
+
+  return reservations;
+};
+
 export {
   createNewReservation,
   getThePendingReservations,
   validateOrRefuseReservationById,
   terminateReservationById,
   getCurrentReservationOfUser,
+  getReservationsByLockerId
 };

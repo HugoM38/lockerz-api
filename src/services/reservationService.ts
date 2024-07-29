@@ -21,7 +21,8 @@ const createNewReservation = async (
   const lockerToFind = new mongoose.Types.ObjectId(lockerId);
   const locker = await Locker.findOne({ _id: lockerToFind });
   if (!locker) throw new Error("Le casier n'existe pas");
-  if (locker.status !== "available") throw new Error("Le casier est déjà occupé");
+  if (locker.status !== "available")
+    throw new Error("Le casier est déjà occupé");
 
   const existingReservations = await Reservation.find({
     $and: [
@@ -30,14 +31,16 @@ const createNewReservation = async (
         $or: [
           { owner: senderId },
           { members: senderId },
-          { members: { $in: members } }
-        ]
-      }
-    ]
+          { members: { $in: members } },
+        ],
+      },
+    ],
   });
 
   if (existingReservations.length > 0) {
-    throw new Error("L'utilisateur ou l'un des membres a déjà une réservation active pour un casier");
+    throw new Error(
+      "L'utilisateur ou l'un des membres a déjà une réservation active pour un casier"
+    );
   }
 
   for (let index = 0; index < members.length; index++) {
@@ -66,13 +69,13 @@ const getThePendingReservations = async (senderId: string) => {
   const user = await User.findOne({ _id: sender });
   if (!user) throw new Error("L'utilisateur n'existe pas");
 
-  if (user.role !== 'admin')
+  if (user.role !== "admin")
     throw new Error("L'utilisateur n'est pas administrateur");
 
-  return await Reservation.find({ status: 'pending' })
-    .populate('locker')
-    .populate('owner')
-    .populate('members');
+  return await Reservation.find({ status: "pending" })
+    .populate("locker")
+    .populate("owner")
+    .populate("members");
 };
 
 const validateOrRefuseReservationById = async (
@@ -147,23 +150,19 @@ const getCurrentReservationOfUser = async (senderId: string) => {
   if (!user) throw new Error("L'utilisateur n'existe pas");
 
   const reservations = await Reservation.find({
-    $or: [
-      { owner: senderId },
-      { members: senderId }
-    ],
-    status: { $in: ["pending", "accepted"] }
+    $or: [{ owner: senderId }, { members: senderId }],
+    status: { $in: ["pending", "accepted"] },
   })
-    .populate('locker')
-    .populate('owner')
-    .populate('members');
+    .populate("owner", "-password")
+    .populate("members", "-password");
 
   return reservations;
-}
+};
 
 export {
   createNewReservation,
   getThePendingReservations,
   validateOrRefuseReservationById,
   terminateReservationById,
-  getCurrentReservationOfUser
+  getCurrentReservationOfUser,
 };

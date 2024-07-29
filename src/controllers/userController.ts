@@ -55,6 +55,9 @@ const deleteUser = async (req: Request & { user?: string }, res: Response) => {
       if (error.message === "L'utilisateur n'existe pas") {
         return res.status(404).json({ error: error.message });
       }
+      if (error.message === "Vous avez des réservations en cours") {
+        return res.status(403).json({ error: error.message });
+      }
       res.status(400).json({ error: error.message });
     } else {
       res.status(400).json({ error: "Une erreur inconnue s'est produite" });
@@ -81,9 +84,9 @@ const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({
       firstname: { $ne: "Utilisateur" },
-      lastname: { $ne: "Supprimé" }
+      lastname: { $ne: "Supprimé" },
     }).select("-password");
-    
+
     res.status(200).json(users);
   } catch (error) {
     res.status(400).json({ error: "Une erreur inconnue s'est produite" });

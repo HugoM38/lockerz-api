@@ -1,4 +1,5 @@
 import User from "../models/userModel";
+import Reservation from "../models/reservationModel";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
@@ -36,6 +37,15 @@ const deleteUserById = async (senderId: string) => {
   const sender = new mongoose.Types.ObjectId(senderId);
   const user = await User.findOne({ _id: sender });
   if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  const reservations = await Reservation.find({
+    owner: sender,
+    status: { $in: ["pending", "accepted"] },
+  });
+
+  if (reservations.length > 0) {
+    throw new Error("Vous avez des réservations en cours");
+  }
 
   const uniqueEmail = `deleted-${Date.now()}-${senderId}@myges.fr`;
 

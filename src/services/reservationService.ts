@@ -30,6 +30,7 @@ const createNewReservation = async (
       {
         $or: [
           { owner: senderId },
+          { owner: { $in: members } },
           { members: senderId },
           { members: { $in: members } },
         ],

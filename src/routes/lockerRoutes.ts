@@ -1,7 +1,7 @@
 import { Router } from "express";
 import validateRequest from "../middlewares/validateRequest";
 import { createLockerSchema } from "../schemas/locker/createLockerSchema";
-import { changeLockerStatus, createLocker, getAdminLockers, getLockers, getOwnedLocker } from "../controllers/lockerController";
+import { changeLockerStatus, createLocker, getAdminLockers, getLockers } from "../controllers/lockerController";
 import authMiddleware from "../middlewares/authMiddleware";
 import { changeLockerStatusSchema } from "../schemas/locker/changeLockerStatusSchema";
 
@@ -11,6 +11,5 @@ router.post("/create", validateRequest(createLockerSchema), authMiddleware, crea
 router.get("/", authMiddleware, getLockers);
 router.get("/adminLockers", authMiddleware, getAdminLockers);
 router.patch("/changeStatus", authMiddleware, validateRequest(changeLockerStatusSchema), changeLockerStatus);
-router.get("/ownedLocker", authMiddleware, getOwnedLocker);
 
 export default router;

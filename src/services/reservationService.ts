@@ -141,9 +141,29 @@ const terminateReservationById = async (
   return reservation;
 };
 
+const getCurrentReservationOfUser = async (senderId: string) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  const reservations = await Reservation.find({
+    $or: [
+      { owner: senderId },
+      { members: senderId }
+    ],
+    status: { $in: ["pending", "accepted"] }
+  })
+    .populate('locker')
+    .populate('owner')
+    .populate('members');
+
+  return reservations;
+}
+
 export {
   createNewReservation,
   getThePendingReservations,
   validateOrRefuseReservationById,
   terminateReservationById,
+  getCurrentReservationOfUser
 };

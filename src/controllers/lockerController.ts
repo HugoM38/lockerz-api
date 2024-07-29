@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import {
   changeLockerStatusById,
   createNewLocker,
-  getTheAdminLockers,
-  getTheOwnedLocker,
+  getTheAdminLockers
 } from "../services/lockerService";
 import Locker from "../models/lockerModel";
 
@@ -92,16 +91,4 @@ const changeLockerStatus = async (
   }
 };
 
-const getOwnedLocker = async (
-  req: Request & { user?: string },
-  res: Response
-) => {
-  try {
-    const locker = await getTheOwnedLocker(req.user!);
-    res.status(200).json(locker);
-  } catch (error) {
-    res.status(400).json({ error: "Une erreur inconnue s'est produite" });
-  }
-};
-
-export { createLocker, getLockers, getAdminLockers, changeLockerStatus, getOwnedLocker };
+export { createLocker, getLockers, getAdminLockers, changeLockerStatus };

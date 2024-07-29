@@ -61,30 +61,9 @@ const changeLockerStatusById = async (
   return await locker.save();
 };
 
-const getTheOwnedLocker = async (senderId: string) => {
-  const sender = new mongoose.Types.ObjectId(senderId);
-  const user = await User.findOne({ _id: sender });
-  if (!user) throw new Error("L'utilisateur n'existe pas");
-
-  const locker = await Locker.findOne({
-    reservations: {
-      $elemMatch: {
-        $or: [
-          { owner: user, status: { $in: ["pending", "accepted"] } },
-          { members: user, status: { $in: ["pending", "accepted"] } },
-        ],
-      },
-    },
-  }).populate("reservations");
-
-  if (!locker) throw new Error("Aucun casier trouvé");
-
-  return locker;
-};
 
 export {
   createNewLocker,
   getTheAdminLockers,
-  changeLockerStatusById,
-  getTheOwnedLocker,
+  changeLockerStatusById
 };

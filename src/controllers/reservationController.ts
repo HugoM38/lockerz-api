@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   createNewReservation,
+  getCurrentReservationOfUser,
   getThePendingReservations,
   terminateReservationById,
   validateOrRefuseReservationById,
@@ -126,9 +127,29 @@ const terminateReservation = async (
   }
 };
 
+const getCurrentReservation = async (
+  req: Request & { user?: string },
+  res: Response
+) => {
+  try {
+    const reservation = await getCurrentReservationOfUser(req.user!);
+    res.status(200).json(reservation);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message == "Utilisateur inexistant") {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
+  }
+}
+
 export {
   createReservation,
   getPendingReservations,
   validateOrRefuseReservation,
   terminateReservation,
+  getCurrentReservation
 };

@@ -149,6 +149,23 @@ const terminateReservationById = async (
   return reservation;
 };
 
+const leaveReservationById = async (senderId: string, reservationId: string) => {
+  const sender = new mongoose.Types.ObjectId(senderId);
+  const user = await User.findOne({ _id: sender });
+  if (!user) throw new Error("L'utilisateur n'existe pas");
+
+  const reservationToFind = new mongoose.Types.ObjectId(reservationId);
+  const reservation = await Reservation.findOne({ _id: reservationToFind });
+  if (!reservation) throw new Error("La réservation n'existe pas");
+
+  reservation.members = reservation.members.filter(
+    (member) => member.toString() !== senderId
+  );
+  await reservation.save();
+
+  return reservation;
+}
+
 const getCurrentReservationOfUser = async (senderId: string) => {
   const sender = new mongoose.Types.ObjectId(senderId);
   const user = await User.findOne({ _id: sender });
@@ -188,5 +205,6 @@ export {
   validateOrRefuseReservationById,
   terminateReservationById,
   getCurrentReservationOfUser,
+  leaveReservationById,
   getReservationsByLockerId,
 };

@@ -4,6 +4,7 @@ import {
   getCurrentReservationOfUser,
   getReservationsByLockerId,
   getThePendingReservations,
+  leaveReservationById,
   terminateReservationById,
   validateOrRefuseReservationById,
 } from "../services/reservationService";
@@ -147,6 +148,29 @@ const getCurrentReservation = async (
   }
 }
 
+const leaveReservation = async (
+  req: Request & { user?: string },
+  res: Response
+) => {
+  try {
+    const { reservationId } = req.body;
+    const reservation = await leaveReservationById(req.user!, reservationId);
+    res.status(200).json(reservation);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message == "Utilisateur inexistant") {
+        return res.status(404).json({ error: error.message });
+      }
+      if (error.message == "La réservation n'existe pas") {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
+  }
+}
+
 const getLockerReservations = async (
   req: Request & { user?: string },
   res: Response
@@ -172,5 +196,6 @@ export {
   validateOrRefuseReservation,
   terminateReservation,
   getCurrentReservation,
+  leaveReservation,
   getLockerReservations,
 };

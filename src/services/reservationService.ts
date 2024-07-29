@@ -158,6 +158,12 @@ const getCurrentReservationOfUser = async (senderId: string) => {
     $or: [{ owner: senderId }, { members: senderId }],
     status: { $in: ["pending", "accepted"] },
   })
+    .populate({
+      path: "locker",
+      populate: {
+        path: "localisation",
+      },
+    })
     .populate("owner", "-password")
     .populate("members", "-password");
 
@@ -182,5 +188,5 @@ export {
   validateOrRefuseReservationById,
   terminateReservationById,
   getCurrentReservationOfUser,
-  getReservationsByLockerId
+  getReservationsByLockerId,
 };

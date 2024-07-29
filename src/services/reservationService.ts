@@ -131,7 +131,7 @@ const terminateReservationById = async (
   const reservation = await Reservation.findOne({ _id: reservationToFind });
   if (!reservation) throw new Error("La réservation n'existe pas");
 
-  if (user._id != reservation.owner) {
+  if (senderId !== reservation.owner.toString()) {
     if (user.role != "admin")
       throw new Error("L'utilisateur n'est pas administrateur");
   }

@@ -32,6 +32,9 @@ const createReservation = async (
       if (error.message == "Un ou plusieurs membres n'existent pas") {
         return res.status(404).json({ error: error.message });
       }
+      if (error.message == "Le casier n'existe pas") {
+        return res.status(404).json({ error: error.message });
+      }
       if (
         error.message ==
         "L'utilisateur ou l'un des membres a déjà une réservation active pour un casier"

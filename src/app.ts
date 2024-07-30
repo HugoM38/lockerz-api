@@ -32,5 +32,9 @@ mongoose
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.log(err));
 
-// Exporter l'application sans lancer le serveur
+if (process.env.NODE_ENV !== 'test'){
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
 export { app, PORT };

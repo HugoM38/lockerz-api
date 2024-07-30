@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import User from "../models/userModel";
 import Locker from "../models/lockerModel";
 import Reservation, { IReservation } from "../models/reservationModel";
+import { sendEmail } from "./emailService";
 
 const createNewReservation = async (
   senderId: string,
@@ -61,6 +62,23 @@ const createNewReservation = async (
   locker.status = "unavailable";
   await locker.save();
 
+  const adminEmails = await User.find({ role: "admin" }).select("email");
+  const adminEmailAddresses = adminEmails.map((admin) => admin.email);
+
+  const memberEmails = await User.find({ _id: { $in: members } }).select("email");
+  const memberEmailAddresses = memberEmails.map((member) => member.email);
+
+  const emailSubject = "Nouvelle réservation de casier";
+  const emailText = `Une nouvelle réservation de casier a été créée par ${user.firstname} ${user.lastname}.`;
+
+  adminEmailAddresses.forEach(async (email) => {
+    await sendEmail(email, emailSubject, emailText);
+  });
+
+  memberEmailAddresses.forEach(async (email) => {
+    await sendEmail(email, emailSubject, emailText);
+  });
+
   return newReservation;
 };
 
@@ -115,6 +133,21 @@ const validateOrRefuseReservationById = async (
   } else {
     throw new Error("Le statut de la réservation est incorrect");
   }
+
+  const owner = await User.findOne({ _id: reservation.owner }).select("email");
+  const memberEmails = await User.find({ _id: { $in: reservation.members } }).select("email");
+  const memberEmailAddresses = memberEmails.map((member) => member.email);
+
+  const emailSubject = `Réservation de casier ${status === "accepted" ? "acceptée" : "refusée"}`;
+  const emailText = `Votre réservation de casier a été ${status === "accepted" ? "acceptée" : "refusée"} par un administrateur.`;
+
+  if (owner) {
+    await sendEmail(owner.email, emailSubject, emailText);
+  }
+
+  memberEmailAddresses.forEach(async (email) => {
+    await sendEmail(email, emailSubject, emailText);
+  });
 
   return reservation;
 };

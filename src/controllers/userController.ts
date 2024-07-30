@@ -83,47 +83,18 @@ const getUser = async (req: Request, res: Response) => {
 
 const getUsers = async (req: Request, res: Response) => {
   try {
-    const usersWithReservations = await Reservation.aggregate([
-      {
-        $match: {
-          status: { $in: ["pending", "accepted"] }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          userIds: {
-            $addToSet: "$owner"
-          },
-          memberIds: {
-            $addToSet: "$members"
-          }
-        }
-      },
-      {
-        $project: {
-          userIds: {
-            $concatArrays: ["$userIds", "$memberIds"]
-          }
-        }
-      },
-      {
-        $unwind: "$userIds"
-      },
-      {
-        $group: {
-          _id: null,
-          userIds: {
-            $addToSet: "$userIds"
-          }
-        }
-      }
-    ]);
+    const reservations = await Reservation.find({
+      status: { $in: ["pending", "accepted"] }
+    }).select("owner members");
 
-    const userIdsToExclude = usersWithReservations.length > 0 ? usersWithReservations[0].userIds : [];
+    const userIdsToExclude = new Set();
+    reservations.forEach(reservation => {
+      userIdsToExclude.add(reservation.owner.toString());
+      reservation.members.forEach(member => userIdsToExclude.add(member.toString()));
+    });
 
     const users = await User.find({
-      _id: { $nin: userIdsToExclude },
+      _id: { $nin: Array.from(userIdsToExclude) },
       firstname: { $ne: "Utilisateur" },
       lastname: { $ne: "Supprimé" },
       isEmailVerified: true,
@@ -132,6 +103,7 @@ const getUsers = async (req: Request, res: Response) => {
 
     res.status(200).json(users);
   } catch (error) {
+    console.error("Error occurred in getUsers:", error);
     res.status(400).json({ error: "Une erreur inconnue s'est produite" });
   }
 };

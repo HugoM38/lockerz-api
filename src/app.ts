@@ -1,15 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
-import dotenv from "dotenv";
 import cors from "cors";
 import localisationRoutes from "./routes/localisationRoutes";
 import lockerRoutes from "./routes/lockerRoutes";
 import reservationRoutes from "./routes/reservationRoutes";
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;

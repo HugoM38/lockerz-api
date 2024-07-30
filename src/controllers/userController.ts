@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
+import Reservation from "../models/reservationModel";
 import {
   deleteUserById,
   editPasswordById,
@@ -82,10 +83,51 @@ const getUser = async (req: Request, res: Response) => {
 
 const getUsers = async (req: Request, res: Response) => {
   try {
+    const usersWithReservations = await Reservation.aggregate([
+      {
+        $match: {
+          status: { $in: ["pending", "accepted"] }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          userIds: {
+            $addToSet: "$owner"
+          },
+          memberIds: {
+            $addToSet: "$members"
+          }
+        }
+      },
+      {
+        $project: {
+          userIds: {
+            $concatArrays: ["$userIds", "$memberIds"]
+          }
+        }
+      },
+      {
+        $unwind: "$userIds"
+      },
+      {
+        $group: {
+          _id: null,
+          userIds: {
+            $addToSet: "$userIds"
+          }
+        }
+      }
+    ]);
+
+    const userIdsToExclude = usersWithReservations.length > 0 ? usersWithReservations[0].userIds : [];
+
     const users = await User.find({
+      _id: { $nin: userIdsToExclude },
       firstname: { $ne: "Utilisateur" },
       lastname: { $ne: "Supprimé" },
       isEmailVerified: true,
+      role: { $ne: "admin" }
     }).select("-password -isEmailVerified -verificationCode");
 
     res.status(200).json(users);

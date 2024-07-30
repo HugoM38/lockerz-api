@@ -23,13 +23,14 @@ app.use("/api/locker", lockerRoutes);
 app.use("/api/localisation", localisationRoutes);
 app.use("/api/reservation", reservationRoutes);
 
+const dbURI = process.env.NODE_ENV === 'test'
+    ? process.env.MONGODB_TEST_URI
+    : process.env.MONGODB_URI;
+
 mongoose
-  .connect(process.env.MONGODB_URI as string)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+    .connect(dbURI as string)
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.log(err));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-export default app;
+// Exporter l'application sans lancer le serveur
+export { app, PORT };

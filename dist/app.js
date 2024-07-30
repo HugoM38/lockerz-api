@@ -10,6 +10,9 @@ const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
+const localisationRoutes_1 = __importDefault(require("./routes/localisationRoutes"));
+const lockerRoutes_1 = __importDefault(require("./routes/lockerRoutes"));
+const reservationRoutes_1 = __importDefault(require("./routes/reservationRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5001;
@@ -17,6 +20,9 @@ app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
 app.use("/api/auth", authRoutes_1.default);
 app.use("/api/user", userRoutes_1.default);
+app.use("/api/locker", lockerRoutes_1.default);
+app.use("/api/localisation", localisationRoutes_1.default);
+app.use("/api/reservation", reservationRoutes_1.default);
 mongoose_1.default
     .connect(process.env.MONGODB_URI)
     .then(() => console.log("MongoDB connected"))

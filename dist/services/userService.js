@@ -14,9 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUserById = exports.editPasswordById = exports.editUserById = void 0;
 const userModel_1 = __importDefault(require("../models/userModel"));
+const reservationModel_1 = __importDefault(require("../models/reservationModel"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const editUserById = (senderId, firstname, lastname) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield userModel_1.default.findOne({ senderId });
+    const sender = new mongoose_1.default.Types.ObjectId(senderId);
+    const user = yield userModel_1.default.findOne({ _id: sender });
     if (!user)
         throw new Error("L'utilisateur n'existe pas");
     if (firstname)
@@ -27,7 +30,8 @@ const editUserById = (senderId, firstname, lastname) => __awaiter(void 0, void 0
 });
 exports.editUserById = editUserById;
 const editPasswordById = (senderId, oldPassword, newPassword) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield userModel_1.default.findOne({ senderId });
+    const sender = new mongoose_1.default.Types.ObjectId(senderId);
+    const user = yield userModel_1.default.findOne({ _id: sender });
     if (!user)
         throw new Error("L'utilisateur n'existe pas");
     const isMatch = yield bcryptjs_1.default.compare(oldPassword, user.password);
@@ -39,12 +43,25 @@ const editPasswordById = (senderId, oldPassword, newPassword) => __awaiter(void 
 });
 exports.editPasswordById = editPasswordById;
 const deleteUserById = (senderId) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield userModel_1.default.findOne({ senderId });
+    const sender = new mongoose_1.default.Types.ObjectId(senderId);
+    const user = yield userModel_1.default.findOne({ _id: sender });
     if (!user)
         throw new Error("L'utilisateur n'existe pas");
-    yield userModel_1.default.updateOne({ senderId }, {
-        $unset: { email: "", password: "" },
-        $set: { firstname: "Utilisateur", lastname: "Supprimé" },
+    const reservations = yield reservationModel_1.default.find({
+        owner: sender,
+        status: { $in: ["pending", "accepted"] },
+    });
+    if (reservations.length > 0) {
+        throw new Error("Vous avez des réservations en cours");
+    }
+    const uniqueEmail = `deleted-${Date.now()}-${senderId}@myges.fr`;
+    yield userModel_1.default.updateOne({ _id: sender }, {
+        $unset: { password: 1 },
+        $set: {
+            firstname: "Utilisateur",
+            lastname: "Supprimé",
+            email: uniqueEmail,
+        },
     });
 });
 exports.deleteUserById = deleteUserById;

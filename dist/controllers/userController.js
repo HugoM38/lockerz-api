@@ -66,6 +66,9 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             if (error.message === "L'utilisateur n'existe pas") {
                 return res.status(404).json({ error: error.message });
             }
+            if (error.message === "Vous avez des réservations en cours") {
+                return res.status(403).json({ error: error.message });
+            }
             res.status(400).json({ error: error.message });
         }
         else {
@@ -78,7 +81,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.params.id.length !== 24)
             return res.status(400).json({ error: "ID invalide" });
-        const user = yield userModel_1.default.findById(req.params.id);
+        const user = yield userModel_1.default.findById(req.params.id).select("-password");
         if (!user)
             return res.status(404).json({ error: "Utilisateur introuvable" });
         res.status(200).json(user);
@@ -90,7 +93,11 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getUser = getUser;
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield userModel_1.default.find();
+        const users = yield userModel_1.default.find({
+            firstname: { $ne: "Utilisateur" },
+            lastname: { $ne: "Supprimé" },
+            isEmailVerified: true,
+        }).select("-password -isEmailVerified -verificationCode");
         res.status(200).json(users);
     }
     catch (error) {

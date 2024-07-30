@@ -30,5 +30,7 @@ const UserSchema = new mongoose_1.Schema({
     role: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    isEmailVerified: { type: Boolean, default: false },
+    verificationCode: { type: String },
 });
 exports.default = mongoose_1.default.model("User", UserSchema);

@@ -195,7 +195,12 @@ const getReservationsByLockerId = async (lockerId: string) => {
   const reservations = await Reservation.find({ locker: lockerId })
     .populate("owner", "-password -isEmailVerified -verificationCode")
     .populate("members", "-password -isEmailVerified -verificationCode")
-    .populate("locker");
+    .populate({
+      path: "locker",
+      populate: {
+        path: "localisation",
+      },
+    });
 
   return reservations;
 };

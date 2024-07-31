@@ -14,7 +14,6 @@ describe('Locker Services', () => {
     let locationId: mongoose.Types.ObjectId;
 
     beforeAll(async () => {
-        // Créer des utilisateurs et une localisation pour les tests
         await User.deleteMany({});
         await Locker.deleteMany({});
         await Localisation.deleteMany({});
@@ -41,9 +40,8 @@ describe('Locker Services', () => {
             name: 'Location 1',
             accessibility: true,
         });
-        locationId = location._id as mongoose.Types.ObjectId; // Assertion de type
+        locationId = location._id as mongoose.Types.ObjectId;
 
-        // Connexion pour obtenir les tokens
         const adminResponse = await request(app)
             .post('/api/auth/signin')
             .send({ email: 'admin.user@myges.fr', password: 'adminpassword' });
@@ -56,7 +54,6 @@ describe('Locker Services', () => {
     });
 
     afterEach(async () => {
-        // Nettoyer les lockers après chaque test
         await Locker.deleteMany({});
     });
 
@@ -66,12 +63,12 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         expect(response.status).toBe(201);
         expect(response.body.number).toBe(1);
-        expect(response.body.localisation).toEqual(locationId.toString()); // Convertir en chaîne de caractères
+        expect(response.body.localisation).toEqual(locationId.toString());
         expect(response.body.status).toBe('available');
     });
 
@@ -81,7 +78,7 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${normalToken}`)
             .send({
                 number: 2,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         expect(response.status).toBe(403);
@@ -89,13 +86,12 @@ describe('Locker Services', () => {
     });
 
     it('should not create a new locker if it already exists', async () => {
-        // Créer un locker avec admin token
         await request(app)
             .post('/api/locker/create')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         const response = await request(app)
@@ -103,7 +99,7 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         expect(response.status).toBe(403);
@@ -111,13 +107,12 @@ describe('Locker Services', () => {
     });
 
     it('should get all lockers', async () => {
-        // Créer des lockers pour le test
         await request(app)
             .post('/api/locker/create')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         await request(app)
@@ -125,14 +120,14 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 2,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         const response = await request(app)
             .get('/api/locker/')
             .set('Authorization', `Bearer ${adminToken}`);
 
-        const lockers: any[] = response.body; // Utiliser 'any' pour faciliter le typage
+        const lockers: any[] = response.body;
 
         expect(response.status).toBe(200);
         expect(lockers.length).toBe(2);
@@ -141,13 +136,12 @@ describe('Locker Services', () => {
     });
 
     it('should get admin lockers', async () => {
-        // Créer des lockers pour le test
         await request(app)
             .post('/api/locker/create')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         await request(app)
@@ -155,14 +149,14 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 2,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
         const response = await request(app)
             .get('/api/locker/adminLockers')
             .set('Authorization', `Bearer ${adminToken}`);
 
-        const lockers: any[] = response.body; // Utiliser 'any' pour faciliter le typage
+        const lockers: any[] = response.body;
 
         expect(response.status).toBe(200);
         expect(lockers.length).toBe(2);
@@ -176,16 +170,16 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
-        const lockerId: mongoose.Types.ObjectId = lockerResponse.body._id as mongoose.Types.ObjectId; // Assertion de type
+        const lockerId: mongoose.Types.ObjectId = lockerResponse.body._id as mongoose.Types.ObjectId;
 
         const response = await request(app)
             .patch('/api/locker/changeStatus')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
-                id: lockerId.toString(), // Convertir en chaîne de caractères
+                id: lockerId.toString(),
                 status: 'occupied',
             });
 
@@ -199,16 +193,16 @@ describe('Locker Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 number: 1,
-                localisation: locationId.toString(), // Convertir en chaîne de caractères
+                localisation: locationId.toString(),
             });
 
-        const lockerId: mongoose.Types.ObjectId = lockerResponse.body._id as mongoose.Types.ObjectId; // Assertion de type
+        const lockerId: mongoose.Types.ObjectId = lockerResponse.body._id as mongoose.Types.ObjectId;
 
         const response = await request(app)
             .patch('/api/locker/changeStatus')
             .set('Authorization', `Bearer ${normalToken}`)
             .send({
-                id: lockerId.toString(), // Convertir en chaîne de caractères
+                id: lockerId.toString(),
                 status: 'occupied',
             });
 
@@ -221,7 +215,7 @@ describe('Locker Services', () => {
             .patch('/api/locker/changeStatus')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
-                id: new mongoose.Types.ObjectId().toString(), // Convertir en chaîne de caractères
+                id: new mongoose.Types.ObjectId().toString(),
                 status: 'occupied',
             });
 

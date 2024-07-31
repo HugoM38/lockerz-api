@@ -9,7 +9,7 @@ const config: Config.InitialOptions = {
     },
     moduleFileExtensions: ['ts', 'js', 'json', 'node'],
     maxWorkers: 1,
-    setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts'], // Charger le fichier de configuration de test
+    setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts'],
 };
 
 export default config;

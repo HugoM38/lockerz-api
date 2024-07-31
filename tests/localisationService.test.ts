@@ -12,7 +12,6 @@ describe('Localisation Services', () => {
     let normalToken: string;
 
     beforeAll(async () => {
-        // Créer un utilisateur administrateur et un utilisateur normal pour les tests
         await User.deleteMany({});
 
         adminUser = await User.create({
@@ -33,7 +32,6 @@ describe('Localisation Services', () => {
             isEmailVerified: true,
         });
 
-        // Connexion pour obtenir les tokens
         const adminResponse = await request(app)
             .post('/api/auth/signin')
             .send({ email: 'admin.user@myges.fr', password: 'adminpassword' });
@@ -46,7 +44,6 @@ describe('Localisation Services', () => {
     });
 
     afterEach(async () => {
-        // Nettoyer les localisations après chaque test
         await Localisation.deleteMany({});
     });
 
@@ -78,7 +75,6 @@ describe('Localisation Services', () => {
     });
 
     it('should not create a new localisation if it already exists', async () => {
-        // Créer une localisation avec admin token
         await request(app)
             .post('/api/localisation/create')
             .set('Authorization', `Bearer ${adminToken}`)
@@ -100,7 +96,6 @@ describe('Localisation Services', () => {
     });
 
     it('should get all localisations', async () => {
-        // Créer des localisations pour le test
         await request(app)
             .post('/api/localisation/create')
             .set('Authorization', `Bearer ${adminToken}`)
@@ -121,10 +116,6 @@ describe('Localisation Services', () => {
             .get('/api/localisation/')
             .set('Authorization', `Bearer ${adminToken}`);
 
-        // Ajout pour débogage
-        console.log(response.body);
-
-        // Définir les types pour les localisations
         const localisations: ILocalisation[] = response.body;
 
         expect(response.status).toBe(200);

@@ -9,7 +9,7 @@ beforeAll(async () => {
     await mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-    } as mongoose.ConnectOptions); // Ajoutez cette conversion de type
+    } as mongoose.ConnectOptions);
 });
 
 afterAll(async () => {

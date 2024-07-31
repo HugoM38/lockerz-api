@@ -19,13 +19,11 @@ describe('Reservation Services', () => {
     let reservationId: mongoose.Types.ObjectId;
 
     beforeAll(async () => {
-        // Réinitialiser la base de données
         await User.deleteMany({});
         await Locker.deleteMany({});
         await Localisation.deleteMany({});
         await Reservation.deleteMany({});
 
-        // Créer des utilisateurs
         adminUser = await User.create({
             firstname: 'Admin',
             lastname: 'User',
@@ -53,21 +51,18 @@ describe('Reservation Services', () => {
             isEmailVerified: true,
         });
 
-        // Créer une localisation
         const location = await Localisation.create({
             name: 'Location 1',
             accessibility: true,
         });
         locationId = location._id as mongoose.Types.ObjectId;
 
-        // Créer un casier
         const locker = await Locker.create({
             number: 1,
             localisation: locationId,
         });
         lockerId = locker._id as mongoose.Types.ObjectId;
 
-        // Connexion pour obtenir les tokens
         const adminResponse = await request(app)
             .post('/api/auth/signin')
             .send({ email: 'admin.user@myges.fr', password: 'adminpassword' });
@@ -94,7 +89,6 @@ describe('Reservation Services', () => {
         });
         locationId = location._id as mongoose.Types.ObjectId;
 
-        // Créer un casier
         const locker = await Locker.create({
             number: 1,
             localisation: locationId,
@@ -120,7 +114,6 @@ describe('Reservation Services', () => {
     });
 
     it('should not create a reservation if the locker is already reserved', async () => {
-        // Créer une première réservation
         await request(app)
             .post('/api/reservation/create')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -129,7 +122,7 @@ describe('Reservation Services', () => {
                 members: [otherUser._id.toString()],
             });
 
-        // Tenter de créer une deuxième réservation pour le même casier
+
         const response = await request(app)
             .post('/api/reservation/create')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -138,7 +131,7 @@ describe('Reservation Services', () => {
                 members: [adminUser._id.toString()],
             });
 
-        expect(response.status).toBe(403); // Assuming 403 Forbidden for conflicting reservation
+        expect(response.status).toBe(403);
         expect(response.body.error).toBe('Le casier est déjà occupé');
     });
 
@@ -156,7 +149,6 @@ describe('Reservation Services', () => {
     });
 
     it('should get pending reservations', async () => {
-        // Créer une réservation
         const createResponse = await request(app)
             .post('/api/reservation/create')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -165,24 +157,21 @@ describe('Reservation Services', () => {
                 members: [otherUser._id.toString()],
             });
 
-        // Vérifier la réponse de création
         expect(createResponse.status).toBe(201);
         expect(createResponse.body).toHaveProperty('_id');
 
-        // Obtenir les réservations en attente
         const response = await request(app)
             .get('/api/reservation/pendingReservation')
             .set('Authorization', `Bearer ${adminToken}`);
 
-        // Vérifier la réponse
         expect(response.status).toBe(200);
         expect(response.body).toEqual(expect.arrayContaining([
             expect.objectContaining({
-                _id: createResponse.body._id, // Vérifie l'ID de la réservation
+                _id: createResponse.body._id,
                 locker: expect.objectContaining({
                     _id: lockerId.toString(),
                     number: 1,
-                    localisation: expect.any(Object), // Vérifie que la localisation est un objet
+                    localisation: expect.any(Object),
                     status: 'unavailable',
                 }),
                 owner: expect.objectContaining({
@@ -219,14 +208,13 @@ describe('Reservation Services', () => {
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
                 reservationId: reservationId.toString(),
-                status: 'accepted', // 'approved' or 'refused'
+                status: 'accepted',
             });
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('status', 'accepted');
     });
 
     it('should terminate a reservation', async () => {
-        // Créer une réservation en attente
         const createResponse = await request(app)
             .post('/api/reservation/create')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -237,7 +225,6 @@ describe('Reservation Services', () => {
 
         reservationId = createResponse.body._id;
 
-        // Valider la réservation d'abord
         await request(app)
             .patch('/api/reservation/validateOrRefuse')
             .set('Authorization', `Bearer ${adminToken}`)
@@ -246,7 +233,6 @@ describe('Reservation Services', () => {
                 status: 'approved',
             });
 
-        // Terminer la réservation
         const response = await request(app)
             .patch('/api/reservation/terminateReservation')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -259,7 +245,6 @@ describe('Reservation Services', () => {
     });
 
     it('should get reservations by locker', async () => {
-        // Créer une réservation
         await request(app)
             .post('/api/reservation/create')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -268,15 +253,12 @@ describe('Reservation Services', () => {
                 members: [otherUser._id.toString()],
             });
 
-        // Obtenir les réservations par casier
         const response = await request(app)
             .get(`/api/reservation/getLockerReservations/${lockerId.toString()}`)
             .set('Authorization', `Bearer ${adminToken}`);
 
-        // Vérifier la réponse
         expect(response.status).toBe(200);
 
-        // Vérifie les réservations renvoyées
         expect(response.body).toEqual(expect.arrayContaining([
             expect.objectContaining({
                 _id: expect.any(String),
@@ -312,7 +294,6 @@ describe('Reservation Services', () => {
     });
 
     it('should leave a reservation', async () => {
-        // Créer une réservation
         const createResponse = await request(app)
             .post('/api/reservation/create')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -323,7 +304,6 @@ describe('Reservation Services', () => {
 
         const reservationId = createResponse.body._id;
 
-        // Quitter la réservation
         const leaveResponse = await request(app)
             .patch('/api/reservation/leaveReservation')
             .set('Authorization', `Bearer ${normalToken}`)
@@ -334,7 +314,6 @@ describe('Reservation Services', () => {
         expect(leaveResponse.status).toBe(200);
         expect(leaveResponse.body).toHaveProperty('status', 'pending');
 
-        // Vérifier que la liste des membres est vide
         const reservationResponse = await request(app)
             .get(`/api/reservation/getCurrentReservation/`)
             .set('Authorization', `Bearer ${adminToken}`);

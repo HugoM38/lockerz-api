@@ -16,7 +16,6 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-    // Nettoyez toutes les collections dans la base de données
     const collections = mongoose.connection.collections;
     for (const key in collections) {
         const collection = collections[key];

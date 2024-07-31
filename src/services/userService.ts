@@ -1,7 +1,9 @@
 import User from "../models/userModel";
 import Reservation from "../models/reservationModel";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { sendEmail } from "./emailService";
 
 const editUserById = async (
   senderId: string,
@@ -62,4 +64,55 @@ const deleteUserById = async (senderId: string) => {
   );
 };
 
-export { editUserById, editPasswordById, deleteUserById };
+const sendResetPasswordEmail = async (email: string) => {
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("Utilisateur introuvable");
+    }
+
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetCodeExpire = Date.now() + 10 * 60 * 1000;
+
+    user.resetPasswordCode = resetCode;
+    user.resetPasswordExpire = resetCodeExpire;
+    await user.save();
+
+    const message = `Votre code de réinitialisation de mot de passe est : ${resetCode}. Il expire dans 10 minutes.`;
+
+    await sendEmail(
+      user.email,
+      "Réinitialisation du mot de passe",
+      message
+    );
+
+    return { message: "Email de réinitialisation de mot de passe envoyé" };
+}
+
+const resetPasswordByEmail = async (email: string, code: string, newPassword: string) => {
+  const user = await User.findOne({
+    email,
+    resetPasswordCode: code,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new Error("Code de réinitialisation invalide ou expiré");
+  }
+
+  user.password = newPassword;
+  user.resetPasswordCode = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  const token = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET as string,
+    { expiresIn: "1h" }
+  );
+
+  return { token, user };
+}
+
+
+export { editUserById, editPasswordById, deleteUserById, sendResetPasswordEmail, resetPasswordByEmail };

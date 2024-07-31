@@ -5,6 +5,8 @@ import {
   deleteUserById,
   editPasswordById,
   editUserById,
+  resetPasswordByEmail,
+  sendResetPasswordEmail,
 } from "../services/userService";
 
 const editUser = async (req: Request & { user?: string }, res: Response) => {
@@ -108,4 +110,38 @@ const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-export { editUser, editPassword, deleteUser, getUser, getUsers };
+const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  try {
+    const response = await sendResetPasswordEmail(email);
+    res.status(200).json(response); 
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "Utilisateur introuvable") {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
+  }
+}
+
+const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    const { token, user } = await resetPasswordByEmail(email, code, newPassword);
+    res.status(200).json({ token, user });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "Code de réinitialisation invalide ou expiré") {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: "Une erreur inconnue s'est produite" });
+    }
+  }
+}
+
+export { editUser, editPassword, deleteUser, getUser, getUsers, forgotPassword, resetPassword };

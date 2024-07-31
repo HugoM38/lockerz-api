@@ -8,6 +8,8 @@ export interface IUser extends Document {
   password: string;
   isEmailVerified: boolean;
   verificationCode: string;
+  resetPasswordCode?: string;
+  resetPasswordExpire?: number;
 }
 
 const UserSchema: Schema = new Schema({
@@ -18,6 +20,8 @@ const UserSchema: Schema = new Schema({
   password: { type: String, required: true },
   isEmailVerified: { type: Boolean, default: false },
   verificationCode: { type: String },
+  resetPasswordCode: { type: String },
+  resetPasswordExpire: { type: Date },
 });
 
 export default mongoose.model<IUser>("User", UserSchema);

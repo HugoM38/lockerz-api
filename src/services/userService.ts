@@ -100,7 +100,8 @@ const resetPasswordByEmail = async (email: string, code: string, newPassword: st
     throw new Error("Code de réinitialisation invalide ou expiré");
   }
 
-  user.password = newPassword;
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
   user.resetPasswordCode = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();

@@ -21,7 +21,7 @@ const UserSchema: Schema = new Schema({
   isEmailVerified: { type: Boolean, default: false },
   verificationCode: { type: String },
   resetPasswordCode: { type: String },
-  resetPasswordExpire: { type: Date },
+  resetPasswordExpire: { type: Number },
 });
 
 export default mongoose.model<IUser>("User", UserSchema);
